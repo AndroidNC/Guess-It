@@ -42,6 +42,10 @@ class GameFragment : Fragment() {
 
     private lateinit var binding: GameFragmentBinding
 
+    private val SCORE_KEY = "score"
+    private val WORD_KEY = "word"
+    private val WORDLIST_KEY = "wordlist"
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
@@ -53,8 +57,14 @@ class GameFragment : Fragment() {
                 false
         )
 
-        resetList()
-        nextWord()
+        if(savedInstanceState == null) {
+            resetList()
+            nextWord()
+        } else {
+            score =  savedInstanceState.getInt(SCORE_KEY)
+            word = savedInstanceState.getString(WORD_KEY)!!
+            wordList = savedInstanceState.getStringArray(WORDLIST_KEY)!!.toMutableList()
+        }
 
         binding.correctButton.setOnClickListener { onCorrect() }
         binding.skipButton.setOnClickListener { onSkip() }
@@ -62,6 +72,13 @@ class GameFragment : Fragment() {
         updateWordText()
         return binding.root
 
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(SCORE_KEY, score)
+        outState.putString(WORD_KEY, word)
+        outState.putStringArray (WORDLIST_KEY, wordList.toTypedArray())
     }
 
     /**
