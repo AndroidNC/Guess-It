@@ -17,11 +17,13 @@
 package com.example.android.guesstheword.screens.game
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.example.android.guesstheword.R
 import com.example.android.guesstheword.databinding.GameFragmentBinding
@@ -31,23 +33,20 @@ import com.example.android.guesstheword.databinding.GameFragmentBinding
  */
 class GameFragment : Fragment() {
 
-    // The current word
-    private var word = ""
+    private lateinit var gameViewModel : GameViewModel
 
-    // The current score
-    private var score = 0
 
-    // The list of words - the front of the list is the next word to guess
-    private lateinit var wordList: MutableList<String>
 
     private lateinit var binding: GameFragmentBinding
 
-    private val SCORE_KEY = "score"
-    private val WORD_KEY = "word"
-    private val WORDLIST_KEY = "wordlist"
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+
+        Log.i("GameFragment", "called ViewModelProviders.of")
+
+        gameViewModel = ViewModelProviders.of(this).get(GameViewModel::class.java)
+
+
 
         // Inflate view and obtain an instance of the binding class
         binding = DataBindingUtil.inflate(
@@ -57,13 +56,9 @@ class GameFragment : Fragment() {
                 false
         )
 
-        if(savedInstanceState == null) {
-            resetList()
-            nextWord()
-        } else {
-            score =  savedInstanceState.getInt(SCORE_KEY)
-            word = savedInstanceState.getString(WORD_KEY)!!
-            wordList = savedInstanceState.getStringArray(WORDLIST_KEY)!!.toMutableList()
+        if(gameViewModel.score == 0) { //only shuffle the questions if it is first time and not when device is rotated.
+            gameViewModel.resetList()
+            gameViewModel.nextWord()
         }
 
         binding.correctButton.setOnClickListener { onCorrect() }
@@ -71,88 +66,47 @@ class GameFragment : Fragment() {
         updateScoreText()
         updateWordText()
         return binding.root
-
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt(SCORE_KEY, score)
-        outState.putString(WORD_KEY, word)
-        outState.putStringArray (WORDLIST_KEY, wordList.toTypedArray())
-    }
-
-    /**
-     * Resets the list of words and randomizes the order
-     */
-    private fun resetList() {
-        wordList = mutableListOf(
-                "queen",
-                "hospital",
-                "basketball",
-                "cat",
-                "change",
-                "snail",
-                "soup",
-                "calendar",
-                "sad",
-                "desk",
-                "guitar",
-                "home",
-                "railway",
-                "zebra",
-                "jelly",
-                "car",
-                "crow",
-                "trade",
-                "bag",
-                "roll",
-                "bubble"
-        )
-        wordList.shuffle()
-    }
 
     /**
      * Called when the game is finished
      */
     private fun gameFinished() {
-        val action = GameFragmentDirections.actionGameToScore(score)
+        val action = GameFragmentDirections.actionGameToScore(gameViewModel.score)
         findNavController(this).navigate(action)
-    }
-
-    /**
-     * Moves to the next word in the list
-     */
-    private fun nextWord() {
-        //Select and remove a word from the list
-        if (wordList.isEmpty()) {
-            gameFinished()
-        } else {
-            word = wordList.removeAt(0)
-        }
-        updateWordText()
-        updateScoreText()
     }
 
     /** Methods for buttons presses **/
 
-    private fun onSkip() {
-        score--
-        nextWord()
+    public fun onSkip() {
+        gameViewModel.onSkip()
+
+        if(gameViewModel.word == "")
+            gameFinished()
+
+        updateScoreText()
+        updateWordText()
     }
 
-    private fun onCorrect() {
-        score++
-        nextWord()
+    public fun onCorrect() {
+        gameViewModel.onCorrect()
+
+        if(gameViewModel.word == "")
+            gameFinished()
+
+        updateScoreText()
+        updateWordText()
     }
 
     /** Methods for updating the UI **/
 
-    private fun updateWordText() {
-        binding.wordText.text = word
-
+    public fun updateWordText() {
+        binding.wordText.text = gameViewModel.word
     }
 
     private fun updateScoreText() {
-        binding.scoreText.text = score.toString()
+        binding.scoreText.text = gameViewModel.score.toString()
     }
+
 }
