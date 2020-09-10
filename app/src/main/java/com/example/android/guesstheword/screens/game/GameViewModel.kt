@@ -1,12 +1,23 @@
 package com.example.android.guesstheword.screens.game
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 class GameViewModel : ViewModel() {
+    // The current word
+    var word = MutableLiveData<String>()
+
+    // The current score
+    var score = MutableLiveData<Int>()
+
     init {
         Log.i("GameViewModel", "View Model created!")
+        //Live Data is always nullable type. so need to initialize it for null safety
+        score.value = 0
+        word.value = ""
 
         resetList()
         nextWord()
@@ -17,19 +28,13 @@ class GameViewModel : ViewModel() {
         Log.i("GameViewModel", "View Model destored!")
     }
 
-    // The current word
-    public var word = ""
-
-    // The current score
-    public var score = 0
-
-    // The list of words - the front of the list is the next word to guess
-    public lateinit var wordList: MutableList<String>
+        // The list of words - the front of the list is the next word to guess
+    lateinit var wordList: MutableList<String>
 
     /**
      * Resets the list of words and randomizes the order
      */
-    public fun resetList() {
+    fun resetList() {
 
         wordList = mutableListOf(
                 "queen",
@@ -57,13 +62,13 @@ class GameViewModel : ViewModel() {
         wordList.shuffle()
     }
 
-    public fun onSkip() {
-        score--
+    fun onSkip() {
+        score.value = (score.value?:0).minus(1)
         nextWord()
     }
 
-    public fun onCorrect() {
-        score++
+    fun onCorrect() {
+        score.value = (score.value?:0).plus(1)
         nextWord()
     }
 
@@ -71,13 +76,13 @@ class GameViewModel : ViewModel() {
     /**
      * Moves to the next word in the list
      */
-    public fun nextWord() {
+    fun nextWord() {
         //Select and remove a word from the list
         if (wordList.isEmpty()) {
-            word = ""
+            word.value = ""
 
         } else {
-            word = wordList.removeAt(0)
+            word.value = wordList.removeAt(0)
         }
     }
 

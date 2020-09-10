@@ -23,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.example.android.guesstheword.R
@@ -46,7 +47,16 @@ class GameFragment : Fragment() {
 
         gameViewModel = ViewModelProviders.of(this).get(GameViewModel::class.java)
 
+        gameViewModel.score.observe(viewLifecycleOwner, Observer {newScore ->
+            binding.scoreText.text = newScore.toString()
+        })
 
+        gameViewModel.word.observe(viewLifecycleOwner, Observer { newWord ->
+            binding.wordText.text = newWord
+
+            if(newWord == "")
+                gameFinished()
+        })
 
         // Inflate view and obtain an instance of the binding class
         binding = DataBindingUtil.inflate(
@@ -56,52 +66,18 @@ class GameFragment : Fragment() {
                 false
         )
 
-        binding.correctButton.setOnClickListener { onCorrect() }
-        binding.skipButton.setOnClickListener { onSkip() }
-        updateScoreText()
-        updateWordText()
+        binding.correctButton.setOnClickListener { gameViewModel.onCorrect() }
+        binding.skipButton.setOnClickListener { gameViewModel.onSkip() }
         return binding.root
     }
-
 
     /**
      * Called when the game is finished
      */
     private fun gameFinished() {
-        val action = GameFragmentDirections.actionGameToScore(gameViewModel.score)
+        val action = GameFragmentDirections.actionGameToScore(gameViewModel.score.value?:0)
         findNavController(this).navigate(action)
     }
 
-    /** Methods for buttons presses **/
-
-    public fun onSkip() {
-        gameViewModel.onSkip()
-
-        if(gameViewModel.word == "")
-            gameFinished()
-
-        updateScoreText()
-        updateWordText()
-    }
-
-    public fun onCorrect() {
-        gameViewModel.onCorrect()
-
-        if(gameViewModel.word == "")
-            gameFinished()
-
-        updateScoreText()
-        updateWordText()
-    }
-
-    /** Methods for updating the UI **/
-
-    public fun updateWordText() {
-        binding.wordText.text = gameViewModel.word
-    }
-
-    private fun updateScoreText() {
-        binding.scoreText.text = gameViewModel.score.toString()
-    }
 
 }
