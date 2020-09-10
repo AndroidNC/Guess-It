@@ -56,11 +56,6 @@ class GameFragment : Fragment() {
                 false
         )
 
-        if(gameViewModel.score == 0) { //only shuffle the questions if it is first time and not when device is rotated.
-            gameViewModel.resetList()
-            gameViewModel.nextWord()
-        }
-
         binding.correctButton.setOnClickListener { onCorrect() }
         binding.skipButton.setOnClickListener { onSkip() }
         updateScoreText()

@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModelProvider
 class GameViewModel : ViewModel() {
     init {
         Log.i("GameViewModel", "View Model created!")
+
+        resetList()
+        nextWord()
     }
 
     override fun onCleared() {
