@@ -47,16 +47,6 @@ class GameFragment : Fragment() {
 
         gameViewModel = ViewModelProviders.of(this).get(GameViewModel::class.java)
 
-        gameViewModel.score.observe(viewLifecycleOwner, Observer {newScore ->
-            binding.scoreText.text = newScore.toString()
-        })
-
-        gameViewModel.word.observe(viewLifecycleOwner, Observer { newWord ->
-            binding.wordText.text = newWord
-
-            if(newWord == "")
-                gameFinished()
-        })
 
         // Inflate view and obtain an instance of the binding class
         binding = DataBindingUtil.inflate(
@@ -68,6 +58,20 @@ class GameFragment : Fragment() {
 
         binding.correctButton.setOnClickListener { gameViewModel.onCorrect() }
         binding.skipButton.setOnClickListener { gameViewModel.onSkip() }
+
+        //establish observer relation ship
+        gameViewModel.score.observe(viewLifecycleOwner, Observer {newScore ->
+            binding.scoreText.text = newScore.toString()
+        })
+
+        gameViewModel.word.observe(viewLifecycleOwner, Observer { newWord ->
+            binding.wordText.text = newWord
+
+            if(newWord == "")
+                gameFinished()
+        })
+
+
         return binding.root
     }
 
