@@ -12,21 +12,22 @@ class GameViewModel : ViewModel() {
     val word: LiveData<String>
         get() = _word
 
-
     // The current score
     private var _score = MutableLiveData<Int>()
     val score: LiveData<Int>
         get() = _score
 
-val isRealtime: LiveData<Int>
-    get() = _score
+    private var _eventGameFinished = MutableLiveData<Boolean>()
+    val eventGameFinished : LiveData<Boolean>
+        get() = _eventGameFinished
+
 
     init {
         Log.i("GameViewModel", "View Model created!")
         //Live Data is always nullable type. so need to initialize it for null safety
         _score.value = 0
         _word.value = ""
-
+        _eventGameFinished.value = false
         resetList()
         nextWord()
     }
@@ -37,7 +38,7 @@ val isRealtime: LiveData<Int>
     }
 
         // The list of words - the front of the list is the next word to guess
-    lateinit var wordList: MutableList<String>
+    private lateinit var wordList: MutableList<String>
 
     /**
      * Resets the list of words and randomizes the order
@@ -70,6 +71,19 @@ val isRealtime: LiveData<Int>
         wordList.shuffle()
     }
 
+    /**
+     * Moves to the next word in the list
+     */
+    private fun nextWord() {
+        //Select and remove a word from the list
+        if (wordList.isEmpty()) {
+            _eventGameFinished.value = true
+
+        } else {
+            _word.value = wordList.removeAt(0)
+        }
+    }
+
     fun onSkip() {
         _score.value = (_score.value?:0).minus(1)
         nextWord()
@@ -80,19 +94,8 @@ val isRealtime: LiveData<Int>
         nextWord()
     }
 
-
-    /**
-     * Moves to the next word in the list
-     */
-    fun nextWord() {
-        //Select and remove a word from the list
-        if (wordList.isEmpty()) {
-            _word.value = ""
-
-        } else {
-            _word.value = wordList.removeAt(0)
-        }
+    fun onGameFinished() {
+        _eventGameFinished.value = false
     }
-
 
 }
