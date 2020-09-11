@@ -8,16 +8,24 @@ import androidx.lifecycle.ViewModelProvider
 
 class GameViewModel : ViewModel() {
     // The current word
-    var word = MutableLiveData<String>()
+    private var _word = MutableLiveData<String>()
+    val word: LiveData<String>
+        get() = _word
+
 
     // The current score
-    var score = MutableLiveData<Int>()
+    private var _score = MutableLiveData<Int>()
+    val score: LiveData<Int>
+        get() = _score
+
+val isRealtime: LiveData<Int>
+    get() = _score
 
     init {
         Log.i("GameViewModel", "View Model created!")
         //Live Data is always nullable type. so need to initialize it for null safety
-        score.value = 0
-        word.value = ""
+        _score.value = 0
+        _word.value = ""
 
         resetList()
         nextWord()
@@ -63,12 +71,12 @@ class GameViewModel : ViewModel() {
     }
 
     fun onSkip() {
-        score.value = (score.value?:0).minus(1)
+        _score.value = (_score.value?:0).minus(1)
         nextWord()
     }
 
     fun onCorrect() {
-        score.value = (score.value?:0).plus(1)
+        _score.value = (_score.value?:0).plus(1)
         nextWord()
     }
 
@@ -79,10 +87,10 @@ class GameViewModel : ViewModel() {
     fun nextWord() {
         //Select and remove a word from the list
         if (wordList.isEmpty()) {
-            word.value = ""
+            _word.value = ""
 
         } else {
-            word.value = wordList.removeAt(0)
+            _word.value = wordList.removeAt(0)
         }
     }
 
