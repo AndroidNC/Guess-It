@@ -7,6 +7,17 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class GameViewModel : ViewModel() {
+
+    companion object  {
+        //This represents different important times
+        //This is when the game is over
+        const val DONE = 0L
+        //this is number of milliseconds in a second
+        const val ONE_SECOND = 1000L
+        //This i
+        const val COUNTDOWN_TIME = 20000L
+    }
+
     // The current word
     private var _word = MutableLiveData<String>()
     val word: LiveData<String>
@@ -21,11 +32,11 @@ class GameViewModel : ViewModel() {
     val eventGameFinished : LiveData<Boolean>
         get() = _eventGameFinished
 
-    private var _timerText = MutableLiveData<String>()
-    val timerText : LiveData<String>
-        get() = _timerText
+    private var _currentTime = MutableLiveData<Long>()
+    val currentTime : LiveData<Long>
+        get() = _currentTime
 
-    private lateinit var countDownTimer: CountDownTimer
+    private lateinit var timer: CountDownTimer
 
     init {
         Log.i("GameViewModel", "View Model created!")
@@ -34,15 +45,17 @@ class GameViewModel : ViewModel() {
         _word.value = ""
         _eventGameFinished.value = false
 
-        countDownTimer = object : CountDownTimer(30000, 1000) {
+         timer = object : CountDownTimer(COUNTDOWN_TIME, ONE_SECOND) {
             override fun onTick(millisUntilFinished: Long) {
-               _timerText.value = "00:" + (millisUntilFinished / 1000).toString()
+               _currentTime.value = millisUntilFinished / ONE_SECOND
             }
 
             override fun onFinish() {
                 _eventGameFinished.value = true
             }
-        }.start()
+        }
+
+        timer.start()
 
         resetList()
         nextWord()
@@ -50,6 +63,7 @@ class GameViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
+        timer.cancel()
         Log.i("GameViewModel", "View Model destored!")
     }
 
@@ -92,12 +106,10 @@ class GameViewModel : ViewModel() {
      */
     private fun nextWord() {
         //Select and remove a word from the list
-        if (wordList.isEmpty()) {
-            _eventGameFinished.value = true
+        if (wordList.isEmpty())
+            resetList()
 
-        } else {
-            _word.value = wordList.removeAt(0)
-        }
+        _word.value = wordList.removeAt(0)
     }
 
     fun onSkip() {
