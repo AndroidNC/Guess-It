@@ -57,8 +57,7 @@ class GameFragment : Fragment() {
                 false
         )
 
-        binding.correctButton.setOnClickListener { gameViewModel.onCorrect() }
-        binding.skipButton.setOnClickListener { gameViewModel.onSkip() }
+        binding.gameViewModel = gameViewModel
 
         //establish observer relation ship
         gameViewModel.score.observe(viewLifecycleOwner, Observer {newScore ->
