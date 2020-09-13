@@ -58,15 +58,8 @@ class GameFragment : Fragment() {
         )
 
         binding.gameViewModel = gameViewModel
+        binding.lifecycleOwner = this //this allows the live data to be observed directly on the view
 
-        //establish observer relation ship
-        gameViewModel.score.observe(viewLifecycleOwner, Observer {newScore ->
-            binding.scoreText.text = newScore.toString()
-        })
-
-        gameViewModel.word.observe(viewLifecycleOwner, Observer { newWord ->
-            binding.wordText.text = newWord
-        })
 
         gameViewModel.eventGameFinished.observe(viewLifecycleOwner, Observer { eventGameFinished ->
             if(eventGameFinished)
