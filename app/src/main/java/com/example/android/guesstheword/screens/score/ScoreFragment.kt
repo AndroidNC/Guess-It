@@ -22,6 +22,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.android.guesstheword.R
@@ -32,6 +35,10 @@ import com.example.android.guesstheword.databinding.ScoreFragmentBinding
  */
 class ScoreFragment : Fragment() {
 
+    private lateinit var viewModel: ScoreViewModel
+    private lateinit var viewModelFactory: ScoreViewModelFactory
+    private lateinit var binding: ScoreFragmentBinding
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -39,7 +46,7 @@ class ScoreFragment : Fragment() {
     ): View? {
 
         // Inflate view and obtain an instance of the binding class.
-        val binding: ScoreFragmentBinding = DataBindingUtil.inflate(
+        binding = DataBindingUtil.inflate(
                 inflater,
                 R.layout.score_fragment,
                 container,
@@ -48,13 +55,30 @@ class ScoreFragment : Fragment() {
 
         // Get args using by navArgs property delegate
         val scoreFragmentArgs by navArgs<ScoreFragmentArgs>()
-        binding.scoreText.text = scoreFragmentArgs.score.toString()
-        binding.playAgainButton.setOnClickListener { onPlayAgain() }
+
+        viewModelFactory = ScoreViewModelFactory(scoreFragmentArgs.score)
+        viewModel = ViewModelProviders.of(this, viewModelFactory).get(ScoreViewModel::class.java)
+
+        viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->
+            UpdateText(newScore)
+         })
+
+        viewModel.playAgainEvent.observe(viewLifecycleOwner, Observer {isPlayAgain ->
+            if(isPlayAgain)
+                GameRestart()
+        })
+
+        binding.playAgainButton.setOnClickListener { viewModel.onPlayAgain() }
 
         return binding.root
     }
 
-    private fun onPlayAgain() {
+    private fun UpdateText(score: Int) {
+        binding.scoreText.text  = score.toString()
+    }
+
+
+    private fun GameRestart() {
         findNavController().navigate(ScoreFragmentDirections.actionRestart())
     }
 }
