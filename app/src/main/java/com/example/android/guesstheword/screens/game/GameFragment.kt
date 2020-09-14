@@ -16,7 +16,10 @@
 
 package com.example.android.guesstheword.screens.game
 
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -58,7 +61,10 @@ class GameFragment : Fragment() {
         )
 
         binding.gameViewModel = gameViewModel
-        binding.lifecycleOwner = this //this allows the live data to be observed directly on the view
+
+        // Specify the current activity as the lifecycle owner of the binding. This is used so that
+        // the binding can observe LiveData updates
+        binding.lifecycleOwner = this //this allows the live data to be observed directly from the view
 
 
         gameViewModel.eventGameFinished.observe(viewLifecycleOwner, Observer { eventGameFinished ->
@@ -66,15 +72,14 @@ class GameFragment : Fragment() {
                 gameOver()
         })
 
-        gameViewModel.currentTime.observe(viewLifecycleOwner, Observer { currentTime ->
-            updateTimerText(DateUtils.formatElapsedTime(currentTime))
+        gameViewModel.eventBuzz.observe(viewLifecycleOwner, Observer { buzzType ->
+           if(buzzType != GameViewModel.BuzzType.NO_BUZZ) {
+               buzz(buzzType.pattern)
+               gameViewModel.onBuzzComplete()
+           }
         })
 
         return binding.root
-    }
-
-    private fun updateTimerText(timerText: String?) {
-        binding.timerText.text = timerText
     }
 
     /**
@@ -85,5 +90,22 @@ class GameFragment : Fragment() {
         findNavController(this).navigate(action)
 
         gameViewModel.onGameFinishComplete()
+    }
+
+    private fun buzz(pattern: LongArray) {
+        val buzzer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            activity?.getSystemService(Vibrator::class.java)
+        } else {
+            TODO("VERSION.SDK_INT < M")
+        }
+
+        buzzer?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                buzzer.vibrate(VibrationEffect.createWaveform(pattern, -1))
+            } else {
+                //deprecated in API 26
+                buzzer.vibrate(pattern, -1)
+            }
+        }
     }
 }
